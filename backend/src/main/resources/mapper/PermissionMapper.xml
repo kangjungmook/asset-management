@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.ams.mapper.PermissionMapper">
+
+    <resultMap id="permissionResultMap" type="com.company.ams.entity.Permission">
+        <id property="permId" column="perm_id"/>
+        <result property="permCode" column="perm_code"/>
+        <result property="permName" column="perm_name"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="permissionResultMap">
+        SELECT perm_id, perm_code, perm_name, created_at
+        FROM tb_permission
+        ORDER BY perm_id
+    </select>
+
+    <select id="findById" resultMap="permissionResultMap">
+        SELECT perm_id, perm_code, perm_name, created_at
+        FROM tb_permission
+        WHERE perm_id = #{permId}
+    </select>
+
+    <insert id="insert" parameterType="com.company.ams.entity.Permission" useGeneratedKeys="true" keyProperty="permId">
+        INSERT INTO tb_permission (perm_code, perm_name)
+        VALUES (#{permCode}, #{permName})
+    </insert>
+
+    <update id="update" parameterType="com.company.ams.entity.Permission">
+        UPDATE tb_permission
+        SET perm_code = #{permCode}, perm_name = #{permName}
+        WHERE perm_id = #{permId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM tb_permission WHERE perm_id = #{permId}
+    </delete>
+
+</mapper>

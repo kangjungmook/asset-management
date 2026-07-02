@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.ams.mapper.UserMapper">
+
+    <resultMap id="userResultMap" type="com.company.ams.entity.User">
+        <id property="userId" column="user_id"/>
+        <result property="employeeNo" column="employee_no"/>
+        <result property="password" column="password"/>
+        <result property="name" column="name"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="deptName" column="dept_name"/>
+        <result property="isAdmin" column="is_admin"/>
+        <result property="isActive" column="is_active"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <sql id="selectUser">
+        SELECT u.user_id, u.employee_no, u.password, u.name, u.dept_id, d.dept_name,
+               u.is_admin, u.is_active, u.created_at, u.updated_at
+        FROM tb_user u
+        LEFT JOIN tb_department d ON d.dept_id = u.dept_id
+    </sql>
+
+    <select id="findByEmployeeNo" resultMap="userResultMap">
+        <include refid="selectUser"/>
+        WHERE u.employee_no = #{employeeNo}
+    </select>
+
+    <select id="findById" resultMap="userResultMap">
+        <include refid="selectUser"/>
+        WHERE u.user_id = #{userId}
+    </select>
+
+    <select id="findAll" resultMap="userResultMap">
+        <include refid="selectUser"/>
+        <where>
+            <if test="deptId != null">AND u.dept_id = #{deptId}</if>
+            <if test="keyword != null and keyword != ''">
+                AND (u.name LIKE CONCAT('%', #{keyword}, '%') OR u.employee_no LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY u.user_id
+    </select>
+
+    <select id="existsByEmployeeNo" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM tb_user WHERE employee_no = #{employeeNo}
+    </select>
+
+    <insert id="insert" parameterType="com.company.ams.entity.User" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO tb_user (employee_no, password, name, dept_id, is_admin)
+        VALUES (#{employeeNo}, #{password}, #{name}, #{deptId}, #{isAdmin})
+    </insert>
+
+    <update id="update" parameterType="com.company.ams.entity.User">
+        UPDATE tb_user
+        SET name = #{name}, dept_id = #{deptId}
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateActive">
+        UPDATE tb_user SET is_active = #{isActive} WHERE user_id = #{userId}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE tb_user SET password = #{password} WHERE user_id = #{userId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM tb_user WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

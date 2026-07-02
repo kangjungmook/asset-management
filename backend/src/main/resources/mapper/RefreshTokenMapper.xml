@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.ams.mapper.RefreshTokenMapper">
+
+    <resultMap id="refreshTokenResultMap" type="com.company.ams.entity.RefreshToken">
+        <id property="tokenId" column="token_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="expiresAt" column="expires_at"/>
+        <result property="revoked" column="revoked"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.company.ams.entity.RefreshToken">
+        INSERT INTO tb_refresh_token (token_id, user_id, expires_at, revoked)
+        VALUES (#{tokenId}, #{userId}, #{expiresAt}, #{revoked})
+    </insert>
+
+    <select id="findById" resultMap="refreshTokenResultMap">
+        SELECT token_id, user_id, expires_at, revoked, created_at
+        FROM tb_refresh_token
+        WHERE token_id = #{tokenId}
+    </select>
+
+    <update id="revokeAllByUserId">
+        UPDATE tb_refresh_token SET revoked = 1 WHERE user_id = #{userId} AND revoked = 0
+    </update>
+
+</mapper>

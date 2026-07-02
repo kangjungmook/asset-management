@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.ams.mapper.AuditLogMapper">
+
+    <resultMap id="auditLogResultMap" type="com.company.ams.entity.AuditLog">
+        <id property="logId" column="log_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="action" column="action"/>
+        <result property="target" column="target"/>
+        <result property="detail" column="detail"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.company.ams.entity.AuditLog" useGeneratedKeys="true" keyProperty="logId">
+        INSERT INTO tb_audit_log (user_id, action, target, detail)
+        VALUES (#{userId}, #{action}, #{target}, #{detail})
+    </insert>
+
+    <sql id="searchWhere">
+        <where>
+            <if test="userId != null">AND l.user_id = #{userId}</if>
+            <if test="action != null and action != ''">AND l.action = #{action}</if>
+            <if test="from != null and from != ''">AND l.created_at &gt;= #{from}</if>
+            <if test="to != null and to != ''">AND l.created_at &lt;= #{to}</if>
+        </where>
+    </sql>
+
+    <select id="search" resultMap="auditLogResultMap">
+        SELECT l.log_id, l.user_id, u.name AS user_name, l.action, l.target, l.detail, l.created_at
+        FROM tb_audit_log l
+        LEFT JOIN tb_user u ON u.user_id = l.user_id
+        <include refid="searchWhere"/>
+        ORDER BY l.log_id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countSearch" resultType="long">
+        SELECT COUNT(*)
+        FROM tb_audit_log l
+        <include refid="searchWhere"/>
+    </select>
+
+    <update id="nullifyUser">
+        UPDATE tb_audit_log SET user_id = NULL WHERE user_id = #{userId}
+    </update>
+
+</mapper>
