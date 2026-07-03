@@ -12,4 +12,6 @@ public interface RefreshTokenMapper {
     RefreshToken findById(@Param("tokenId") String tokenId);
 
     void revokeAllByUserId(@Param("userId") Integer userId);
+
+    void deleteAllByUserId(@Param("userId") Integer userId);
 }

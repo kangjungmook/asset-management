@@ -1,6 +1,7 @@
 package com.company.ams.controller;
 
 import com.company.ams.common.ApiResponse;
+import com.company.ams.dto.ChangePasswordRequest;
 import com.company.ams.dto.LoginRequest;
 import com.company.ams.dto.LoginResponse;
 import com.company.ams.dto.RefreshRequest;
@@ -46,5 +47,12 @@ public class AuthController {
     public ApiResponse<TempPasswordResponse> resetPassword(@PathVariable Integer id) {
         AuthPrincipal me = currentUser.get();
         return ApiResponse.success(authService.resetPassword(id, me), "임시 비밀번호가 발급되었습니다.");
+    }
+
+    @PostMapping("/change-password")
+    public ApiResponse<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        AuthPrincipal me = currentUser.get();
+        authService.changePassword(me.getUserId(), request.getCurrentPassword(), request.getNewPassword());
+        return ApiResponse.success(null, "비밀번호가 변경되었습니다.");
     }
 }

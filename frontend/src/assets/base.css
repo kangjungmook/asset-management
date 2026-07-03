@@ -226,6 +226,12 @@ table.data-table {
 .badge-danger { background: var(--color-danger-tint); color: var(--color-danger); }
 .badge-purple { background: var(--color-purple-tint); color: var(--color-purple); }
 
+.code-tag {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
 /* ---------- Banner ---------- */
 .banner {
   display: flex;

@@ -16,6 +16,7 @@ const ICONS = {
   ],
   departments: ['M3 21h18', 'M5 21V7l7-4 7 4v14', 'M9 9h1', 'M9 13h1', 'M14 9h1', 'M14 13h1', 'M10 21v-4h4v4'],
   permissions: ['M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z', 'M9 12l2 2 4-4'],
+  'account-types': ['M4 7h16v10H4z', 'M4 11h16', 'M8 15h.01', 'M12 15h4'],
   'audit-log': ['M7 4h10l3 3v13H7z', 'M14 4v4h4', 'M10 13h6', 'M10 17h4'],
   home: ['M4 11l8-7 8 7', 'M6 10v9h12v-9'],
 }

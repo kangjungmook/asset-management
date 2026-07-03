@@ -2,6 +2,7 @@ HELP.md
 .gradle
 .gradle-home
 build/
+src/main/resources/application-secrets.yml
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/

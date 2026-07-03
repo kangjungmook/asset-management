@@ -14,6 +14,7 @@ public class User {
     private String deptName;
     private Boolean isAdmin;
     private Boolean isActive;
+    private Boolean mustChangePassword;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

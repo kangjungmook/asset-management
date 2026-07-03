@@ -17,7 +17,7 @@ const keyword = ref('')
 let searchTimer = null
 
 const showCreateForm = ref(false)
-const createForm = ref({ employeeNo: '', password: '', name: '', deptId: null })
+const createForm = ref({ employeeNo: '', name: '', deptId: null })
 const createError = ref('')
 
 async function loadUsers() {
@@ -43,7 +43,6 @@ async function loadDepartments() {
 function openCreate() {
   createForm.value = {
     employeeNo: '',
-    password: '',
     name: '',
     deptId: auth.isAdmin ? null : auth.dept?.deptId,
   }
@@ -104,10 +103,6 @@ onMounted(async () => {
             <input v-model="createForm.employeeNo" class="input" type="text" />
           </div>
           <div class="field" style="margin-bottom: 0">
-            <label>초기 비밀번호</label>
-            <input v-model="createForm.password" class="input" type="text" />
-          </div>
-          <div class="field" style="margin-bottom: 0">
             <label>이름</label>
             <input v-model="createForm.name" class="input" type="text" />
           </div>
@@ -119,6 +114,9 @@ onMounted(async () => {
             </select>
           </div>
         </div>
+        <p class="field-hint" style="margin-top: var(--space-1)">
+          초기 비밀번호는 <strong>1234</strong>로 자동 설정됩니다. 최초 로그인 시 새 비밀번호로 변경하라는 안내가 표시됩니다.
+        </p>
         <div class="form-actions">
           <button class="btn btn-primary" @click="submitCreate">저장하기</button>
           <button class="btn btn-ghost" @click="showCreateForm = false">닫기</button>

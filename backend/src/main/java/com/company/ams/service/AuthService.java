@@ -59,7 +59,8 @@ public class AuthService {
                 accessToken, refreshToken,
                 user.getUserId(), user.getEmployeeNo(), user.getName(),
                 user.getIsAdmin(), user.getDeptId(), user.getDeptName(),
-                principal.getRoles(), principal.getPermissions()
+                principal.getRoles(), principal.getPermissions(),
+                Boolean.TRUE.equals(user.getMustChangePassword())
         );
     }
 
@@ -67,6 +68,12 @@ public class AuthService {
     public void logout(Integer userId) {
         refreshTokenMapper.revokeAllByUserId(userId);
         auditLogService.log(userId, "LOGOUT", "user:" + userId, "로그아웃");
+    }
+
+    @Transactional
+    public void changePassword(Integer userId, String currentPassword, String newPassword) {
+        userService.changeOwnPassword(userId, currentPassword, newPassword);
+        refreshTokenMapper.revokeAllByUserId(userId);
     }
 
     public TokenResponse refresh(String refreshToken) {

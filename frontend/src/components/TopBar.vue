@@ -24,6 +24,8 @@ const initial = computed(() => auth.name?.charAt(0) || '?')
 
     <div class="topbar__spacer"></div>
 
+    <RouterLink to="/change-password" class="btn btn-ghost btn-sm">비밀번호 변경</RouterLink>
+
     <div class="topbar__user">
       <div class="topbar__avatar">{{ initial }}</div>
       <div>

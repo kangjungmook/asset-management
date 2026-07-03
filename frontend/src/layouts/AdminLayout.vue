@@ -34,6 +34,7 @@ async function handleLogout() {
           <RouterLink class="sidebar__link" to="/manage/users"><NavIcon name="users" />사용자 관리</RouterLink>
           <RouterLink class="sidebar__link" to="/manage/departments"><NavIcon name="departments" />부서 관리</RouterLink>
           <RouterLink class="sidebar__link" to="/manage/permissions"><NavIcon name="permissions" />권한 관리</RouterLink>
+          <RouterLink class="sidebar__link" to="/manage/account-types"><NavIcon name="account-types" />계정유형 관리</RouterLink>
           <RouterLink class="sidebar__link" to="/manage/audit-logs"><NavIcon name="audit-log" />감사 로그</RouterLink>
         </nav>
         <div class="sidebar__footer">

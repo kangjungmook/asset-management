@@ -21,13 +21,14 @@ CREATE TABLE tb_user (
     dept_id     INT,
     is_admin    TINYINT(1)   DEFAULT 0,
     is_active   TINYINT(1)   DEFAULT 1,
+    must_change_password TINYINT(1) DEFAULT 1,
     created_at  DATETIME DEFAULT NOW(),
     updated_at  DATETIME DEFAULT NOW() ON UPDATE NOW(),
     FOREIGN KEY (dept_id) REFERENCES tb_department(dept_id)
 );
 -- 초기 관리자 계정: employee_no = admin / password = admin1234 (BCrypt)
-INSERT INTO tb_user (employee_no, password, name, is_admin)
-VALUES ('admin', '$2a$10$7EqJtq98hPqEX7fNZaFWoOa/3xBpVfIwXc9l3zBIOVYY.9x1YU.XK', '관리자', 1);
+INSERT INTO tb_user (employee_no, password, name, is_admin, must_change_password)
+VALUES ('admin', '$2a$10$7EqJtq98hPqEX7fNZaFWoOa/3xBpVfIwXc9l3zBIOVYY.9x1YU.XK', '관리자', 1, 0);
 
 CREATE TABLE tb_user_role (
     id         INT AUTO_INCREMENT PRIMARY KEY,

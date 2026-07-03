@@ -15,6 +15,7 @@ public class UserDetailResponse {
     private String deptName;
     private Boolean isAdmin;
     private Boolean isActive;
+    private Boolean mustChangePassword;
     private List<String> roles;
     private List<UserPermission> permissions;
     private LocalDateTime createdAt;

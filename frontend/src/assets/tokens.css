@@ -27,10 +27,10 @@
   --space-16: 64px;
 
   /* ---------- Radius / Motion ---------- */
-  --radius-sm: 7px;
-  --radius-md: 9px;
-  --radius-lg: 12px;
-  --radius-xl: 14px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --duration-fast: 120ms;
   --duration-base: 180ms;
@@ -47,9 +47,9 @@
   --color-text-muted: #5C6573;
   --color-text-faint: #9AA1AC;
 
-  --color-brand: #2F5BD7;
-  --color-brand-hover: #2749B0;
-  --color-brand-tint: #EAF0FE;
+  --color-brand: #0F6B64;
+  --color-brand-hover: #0B534E;
+  --color-brand-tint: #E3F1EE;
   --color-brand-contrast: #FFFFFF;
 
   --color-success: #15824A;

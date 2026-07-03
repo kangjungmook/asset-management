@@ -123,7 +123,7 @@ onMounted(load)
         </thead>
         <tbody>
           <tr v-for="perm in permissions" :key="perm.permId">
-            <td><span class="badge badge-brand">{{ perm.permCode }}</span></td>
+            <td><span class="code-tag">{{ perm.permCode }}</span></td>
             <td>{{ perm.permName }}</td>
             <td>
               <button class="btn btn-ghost btn-sm" @click="openEdit(perm)">수정하기</button>

@@ -23,7 +23,8 @@ public interface UserMapper {
 
     void updateActive(@Param("userId") Integer userId, @Param("isActive") boolean isActive);
 
-    void updatePassword(@Param("userId") Integer userId, @Param("password") String password);
+    void updatePassword(@Param("userId") Integer userId, @Param("password") String password,
+                         @Param("mustChangePassword") boolean mustChangePassword);
 
     void deleteById(@Param("userId") Integer userId);
 }

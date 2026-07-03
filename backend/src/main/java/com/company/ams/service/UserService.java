@@ -13,6 +13,7 @@ import com.company.ams.entity.User;
 import com.company.ams.mapper.AuditLogMapper;
 import com.company.ams.mapper.PasswordMapper;
 import com.company.ams.mapper.PermissionMapper;
+import com.company.ams.mapper.RefreshTokenMapper;
 import com.company.ams.mapper.UserMapper;
 import com.company.ams.mapper.UserPermissionMapper;
 import com.company.ams.mapper.UserRoleMapper;
@@ -34,6 +35,7 @@ public class UserService {
 
     private static final Set<String> VALID_ROLES = Set.of("DEPT_MANAGER", "USER");
     private static final String TEMP_PW_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$";
+    public static final String DEFAULT_INITIAL_PASSWORD = "1234";
 
     private final UserMapper userMapper;
     private final UserRoleMapper userRoleMapper;
@@ -41,6 +43,7 @@ public class UserService {
     private final PermissionMapper permissionMapper;
     private final PasswordMapper passwordMapper;
     private final AuditLogMapper auditLogMapper;
+    private final RefreshTokenMapper refreshTokenMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuditLogService auditLogService;
 
@@ -65,6 +68,7 @@ public class UserService {
         response.setDeptName(user.getDeptName());
         response.setIsAdmin(user.getIsAdmin());
         response.setIsActive(user.getIsActive());
+        response.setMustChangePassword(user.getMustChangePassword());
         response.setCreatedAt(user.getCreatedAt());
         response.setUpdatedAt(user.getUpdatedAt());
         response.setRoles(userRoleMapper.findRoleCodesByUserId(user.getUserId()));
@@ -79,10 +83,11 @@ public class UserService {
         }
         User user = new User();
         user.setEmployeeNo(request.getEmployeeNo());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(passwordEncoder.encode(DEFAULT_INITIAL_PASSWORD));
         user.setName(request.getName());
         user.setDeptId(request.getDeptId());
         user.setIsAdmin(false);
+        user.setMustChangePassword(true);
         userMapper.insert(user);
         auditLogService.log(actor.getUserId(), "USER_CREATE", "user:" + user.getUserId(),
                 "사용자 생성: " + user.getEmployeeNo());
@@ -121,6 +126,7 @@ public class UserService {
         passwordMapper.nullifyRequester(userId);
         passwordMapper.nullifyApprover(userId);
         passwordMapper.nullifyConfirmedBy(userId);
+        refreshTokenMapper.deleteAllByUserId(userId);
         auditLogService.log(actor.getUserId(), "USER_DELETE", "user:" + userId,
                 "사용자 삭제: " + user.getEmployeeNo());
         auditLogMapper.nullifyUser(userId);
@@ -205,7 +211,7 @@ public class UserService {
             throw new NotFoundException("사용자를 찾을 수 없습니다.");
         }
         String tempPassword = generateTempPassword();
-        userMapper.updatePassword(userId, passwordEncoder.encode(tempPassword));
+        userMapper.updatePassword(userId, passwordEncoder.encode(tempPassword), true);
         auditLogService.log(actor.getUserId(), "PASSWORD_RESET", "user:" + userId,
                 "임시 비밀번호 발급: " + user.getEmployeeNo());
         return new TempPasswordResponse(user.getEmployeeNo(), tempPassword);
@@ -217,5 +223,18 @@ public class UserService {
                 .mapToObj(TEMP_PW_CHARS::charAt)
                 .map(String::valueOf)
                 .collect(Collectors.joining());
+    }
+
+    @Transactional
+    public void changeOwnPassword(Integer userId, String currentPassword, String newPassword) {
+        User user = userMapper.findById(userId);
+        if (user == null) {
+            throw new NotFoundException("사용자를 찾을 수 없습니다.");
+        }
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new BusinessException("현재 비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+        }
+        userMapper.updatePassword(userId, passwordEncoder.encode(newPassword), false);
+        auditLogService.log(userId, "PASSWORD_CHANGE", "user:" + userId, "본인 비밀번호 변경");
     }
 }

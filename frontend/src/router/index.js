@@ -16,6 +16,11 @@ const routes = [
     meta: { public: true },
   },
   {
+    path: '/change-password',
+    name: 'change-password',
+    component: () => import('@/views/ChangePasswordView.vue'),
+  },
+  {
     path: '/',
     component: AppLayout,
     children: [
@@ -56,6 +61,12 @@ const routes = [
         meta: { roles: ['ADMIN'] },
       },
       {
+        path: 'manage/account-types',
+        name: 'account-types',
+        component: () => import('@/views/AccountTypesView.vue'),
+        meta: { roles: ['ADMIN'] },
+      },
+      {
         path: 'manage/audit-logs',
         name: 'audit-logs',
         component: () => import('@/views/AuditLogsView.vue'),
@@ -88,6 +99,14 @@ router.beforeEach((to) => {
 
   if (!auth.isLoggedIn) {
     return { path: '/login' }
+  }
+
+  if (auth.mustChangePassword && to.name !== 'change-password') {
+    return { path: '/change-password' }
+  }
+
+  if (to.name === 'change-password') {
+    return true
   }
 
   if (to.path === '/') {

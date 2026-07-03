@@ -11,13 +11,14 @@
         <result property="deptName" column="dept_name"/>
         <result property="isAdmin" column="is_admin"/>
         <result property="isActive" column="is_active"/>
+        <result property="mustChangePassword" column="must_change_password"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
     <sql id="selectUser">
         SELECT u.user_id, u.employee_no, u.password, u.name, u.dept_id, d.dept_name,
-               u.is_admin, u.is_active, u.created_at, u.updated_at
+               u.is_admin, u.is_active, u.must_change_password, u.created_at, u.updated_at
         FROM tb_user u
         LEFT JOIN tb_department d ON d.dept_id = u.dept_id
     </sql>
@@ -48,8 +49,8 @@
     </select>
 
     <insert id="insert" parameterType="com.company.ams.entity.User" useGeneratedKeys="true" keyProperty="userId">
-        INSERT INTO tb_user (employee_no, password, name, dept_id, is_admin)
-        VALUES (#{employeeNo}, #{password}, #{name}, #{deptId}, #{isAdmin})
+        INSERT INTO tb_user (employee_no, password, name, dept_id, is_admin, must_change_password)
+        VALUES (#{employeeNo}, #{password}, #{name}, #{deptId}, #{isAdmin}, #{mustChangePassword})
     </insert>
 
     <update id="update" parameterType="com.company.ams.entity.User">
@@ -63,7 +64,9 @@
     </update>
 
     <update id="updatePassword">
-        UPDATE tb_user SET password = #{password} WHERE user_id = #{userId}
+        UPDATE tb_user
+        SET password = #{password}, must_change_password = #{mustChangePassword}
+        WHERE user_id = #{userId}
     </update>
 
     <delete id="deleteById">

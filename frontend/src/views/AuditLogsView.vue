@@ -84,7 +84,7 @@ onMounted(load)
           <tr v-for="log in logs" :key="log.logId">
             <td class="text-muted">{{ log.createdAt?.replace('T', ' ').slice(0, 19) }}</td>
             <td>{{ log.userName || '-' }}</td>
-            <td><span class="badge">{{ log.action }}</span></td>
+            <td><span class="code-tag">{{ log.action }}</span></td>
             <td class="text-muted">{{ log.target }}</td>
             <td class="text-muted">{{ log.detail }}</td>
           </tr>

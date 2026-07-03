@@ -22,6 +22,7 @@ function emptyState() {
     permissions: [],
     accessToken: '',
     refreshToken: '',
+    mustChangePassword: false,
   }
 }
 
@@ -51,10 +52,15 @@ export const useAuthStore = defineStore('auth', {
       this.permissions = data.permissions || []
       this.accessToken = data.accessToken
       this.refreshToken = data.refreshToken
+      this.mustChangePassword = !!data.mustChangePassword
       this.persist()
     },
     setAccessToken(token) {
       this.accessToken = token
+      this.persist()
+    },
+    clearMustChangePassword() {
+      this.mustChangePassword = false
       this.persist()
     },
     persist() {
