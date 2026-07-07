@@ -1,16 +1,28 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login as loginApi } from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 
+const REMEMBER_KEY = 'ams.rememberedEmployeeNo'
+
 const employeeNo = ref('')
 const password = ref('')
+const rememberMe = ref(false)
+const showPassword = ref(false)
 const errorMessage = ref('')
 const loading = ref(false)
 
 const auth = useAuthStore()
 const router = useRouter()
+
+onMounted(() => {
+  const remembered = localStorage.getItem(REMEMBER_KEY)
+  if (remembered) {
+    employeeNo.value = remembered
+    rememberMe.value = true
+  }
+})
 
 async function handleSubmit() {
   if (loading.value) return
@@ -18,6 +30,11 @@ async function handleSubmit() {
   loading.value = true
   try {
     const data = await loginApi({ employeeNo: employeeNo.value, password: password.value })
+    if (rememberMe.value) {
+      localStorage.setItem(REMEMBER_KEY, employeeNo.value)
+    } else {
+      localStorage.removeItem(REMEMBER_KEY)
+    }
     auth.setFromLogin(data)
     router.push(auth.homePath)
   } catch (err) {
@@ -58,20 +75,38 @@ async function handleSubmit() {
             type="text"
             autocomplete="username"
             required
+            autofocus
           />
         </div>
 
         <div class="field">
           <label for="password">비밀번호</label>
-          <input
-            id="password"
-            v-model="password"
-            class="input"
-            type="password"
-            autocomplete="current-password"
-            required
-          />
+          <div style="position: relative">
+            <input
+              id="password"
+              v-model="password"
+              class="input"
+              :type="showPassword ? 'text' : 'password'"
+              autocomplete="current-password"
+              required
+              style="width: 100%; padding-right: 44px"
+            />
+            <button
+              type="button"
+              class="password-toggle"
+              :aria-label="showPassword ? '비밀번호 숨기기' : '비밀번호 표시'"
+              @click="showPassword = !showPassword"
+            >
+              <svg v-if="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>
+              <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18" /><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" /><path d="M9.9 5.1A9.4 9.4 0 0 1 12 5c6.5 0 10 7 10 7a13.2 13.2 0 0 1-3.1 3.9M6.2 6.2C4 7.6 2 12 2 12a13.4 13.4 0 0 0 5 5.6" /></svg>
+            </button>
+          </div>
         </div>
+
+        <label class="checkbox-row" style="margin-bottom: var(--space-5)">
+          <input v-model="rememberMe" type="checkbox" />
+          사번 기억하기
+        </label>
 
         <div class="form-actions">
           <button type="submit" class="btn btn-primary" style="width: 100%; height: 46px" :disabled="loading">

@@ -25,6 +25,10 @@
         UPDATE tb_refresh_token SET revoked = 1 WHERE user_id = #{userId} AND revoked = 0
     </update>
 
+    <update id="revoke">
+        UPDATE tb_refresh_token SET revoked = 1 WHERE token_id = #{tokenId}
+    </update>
+
     <delete id="deleteAllByUserId">
         DELETE FROM tb_refresh_token WHERE user_id = #{userId}
     </delete>

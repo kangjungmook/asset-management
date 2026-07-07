@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { listAuditLogs } from '@/api/auditLogs'
+import { actionLabel, targetLabel } from '@/utils/auditLog'
 import PaginationBar from '@/components/PaginationBar.vue'
 
 const logs = ref([])
@@ -44,7 +45,7 @@ onMounted(load)
   <div>
     <div class="page-header">
       <div>
-        <h1>감사 로그</h1>
+        <h1>감시 로그 </h1>
         <p class="page-header__desc">로그인, 계정 변경, 권한 변경 등 시스템 전반의 활동 기록입니다.</p>
       </div>
     </div>
@@ -84,8 +85,8 @@ onMounted(load)
           <tr v-for="log in logs" :key="log.logId">
             <td class="text-muted">{{ log.createdAt?.replace('T', ' ').slice(0, 19) }}</td>
             <td>{{ log.userName || '-' }}</td>
-            <td><span class="code-tag">{{ log.action }}</span></td>
-            <td class="text-muted">{{ log.target }}</td>
+            <td><span class="code-tag">{{ actionLabel(log.action) }}</span></td>
+            <td class="text-muted">{{ targetLabel(log.target) }}</td>
             <td class="text-muted">{{ log.detail }}</td>
           </tr>
         </tbody>

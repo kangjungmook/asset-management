@@ -1,11 +1,21 @@
 import { defineStore } from 'pinia'
+import { decodeJwtExpiryMs } from '@/utils/jwt'
 
 const STORAGE_KEY = 'ams.auth'
 
 function loadFromStorage() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : null
+    if (!raw) return null
+    const saved = JSON.parse(raw)
+
+    const expMs = saved.refreshToken ? decodeJwtExpiryMs(saved.refreshToken) : null
+    if (!expMs || expMs <= Date.now()) {
+      localStorage.removeItem(STORAGE_KEY)
+      return null
+    }
+
+    return saved
   } catch {
     return null
   }
@@ -57,6 +67,11 @@ export const useAuthStore = defineStore('auth', {
     },
     setAccessToken(token) {
       this.accessToken = token
+      this.persist()
+    },
+    setTokens(accessToken, refreshToken) {
+      this.accessToken = accessToken
+      this.refreshToken = refreshToken
       this.persist()
     },
     clearMustChangePassword() {

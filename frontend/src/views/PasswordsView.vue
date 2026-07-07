@@ -143,11 +143,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
+  <div> 
     <div class="page-header">
       <div>
         <h1>패스워드 관리대장</h1>
-        <p class="page-header__desc">계정 비밀번호 변경 이력을 기록합니다. 실제 비밀번호는 저장하지 않습니다.</p>
+        <p class="page-header__desc">계정 비밀번호 변경 이력을 기록합니다.</p>
       </div>
       <button class="btn btn-primary" @click="openCreate">항목 등록하기</button>
     </div>

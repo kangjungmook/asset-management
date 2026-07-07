@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
 import {
@@ -39,8 +39,36 @@ const tempPasswordResult = ref(null)
 
 const departments = ref([])
 const allPermissions = ref([])
+const visiblePermissions = computed(() =>
+  allPermissions.value.filter((perm) => !(perm.permCode === 'PASSWORD.EDIT' && hasRole('DEPT_MANAGER'))),
+)
 
-const ALL_ROLES = ['DEPT_MANAGER']
+const ALL_ROLES = [{ code: 'DEPT_MANAGER', label: '부서 관리자' }]
+
+const roleForm = ref([])
+const permissionForm = ref([])
+
+const isFormDirty = computed(() => {
+  if (!detail.value) return false
+  if (detailForm.value.name !== detail.value.name) return true
+  if (detailForm.value.deptId !== detail.value.deptId) return true
+  const origRoles = JSON.stringify([...(detail.value.roles || [])].sort())
+  const curRoles = JSON.stringify([...roleForm.value].sort())
+  if (origRoles !== curRoles) return true
+  const origPerms = JSON.stringify((detail.value.permissions || []).map((p) => p.permId).sort())
+  const curPerms = JSON.stringify([...permissionForm.value].sort())
+  return origPerms !== curPerms
+})
+
+onBeforeRouteLeave(async () => {
+  if (!isFormDirty.value) return true
+  return ui.confirm({
+    title: '저장하지 않은 변경사항이 있습니다',
+    message: '수정한 내용을 저장하지 않고 나가면 사라집니다.',
+    confirmText: '저장 안 하고 나가기',
+    danger: true,
+  })
+})
 
 const pwEntries = ref([])
 const accountTypes = ref([])
@@ -66,6 +94,8 @@ const pwForm = ref(emptyPwForm())
 async function loadDetail() {
   detail.value = await getUser(userId.value)
   detailForm.value = { name: detail.value.name, deptId: detail.value.deptId }
+  roleForm.value = [...(detail.value.roles || [])]
+  permissionForm.value = (detail.value.permissions || []).map((p) => p.permId)
 }
 
 async function loadPasswords() {
@@ -79,21 +109,38 @@ async function loadPasswords() {
 }
 
 function hasRole(role) {
-  return detail.value?.roles?.includes(role)
+  return roleForm.value.includes(role)
 }
 
 function hasPermission(permId) {
-  return detail.value?.permissions?.some((p) => p.permId === permId)
+  return permissionForm.value.includes(permId)
 }
 
 async function submitDetail() {
   detailError.value = ''
   try {
     await updateUser(userId.value, detailForm.value)
-    ui.success('사용자 정보가 저장되었습니다.')
+
+    const currentRoles = detail.value.roles || []
+    for (const { code } of ALL_ROLES) {
+      const has = currentRoles.includes(code)
+      const wants = roleForm.value.includes(code)
+      if (wants && !has) await grantRole(userId.value, code)
+      if (!wants && has) await revokeRole(userId.value, code)
+    }
+
+    const currentPerms = detail.value.permissions || []
+    for (const perm of allPermissions.value) {
+      const granted = currentPerms.find((p) => p.permId === perm.permId)
+      const wants = permissionForm.value.includes(perm.permId)
+      if (wants && !granted) await grantPermission(userId.value, perm.permId)
+      if (!wants && granted) await revokePermission(userId.value, granted.id ?? perm.permId)
+    }
+
+    ui.success('저장되었습니다.')
     await loadDetail()
   } catch (err) {
-    detailError.value = err?.response?.data?.message || '수정에 실패했습니다.'
+    detailError.value = err?.response?.data?.message || '저장에 실패했습니다.'
   }
 }
 
@@ -151,23 +198,20 @@ async function handleResetPassword() {
   ui.success('임시 비밀번호가 발급되었습니다.')
 }
 
-async function toggleRole(role, checked) {
+function toggleRole(role, checked) {
   if (checked) {
-    await grantRole(userId.value, role)
+    if (!roleForm.value.includes(role)) roleForm.value.push(role)
   } else {
-    await revokeRole(userId.value, role)
+    roleForm.value = roleForm.value.filter((r) => r !== role)
   }
-  await loadDetail()
 }
 
-async function togglePermission(perm, checked) {
+function togglePermission(perm, checked) {
   if (checked) {
-    await grantPermission(userId.value, perm.permId)
+    if (!permissionForm.value.includes(perm.permId)) permissionForm.value.push(perm.permId)
   } else {
-    const granted = detail.value.permissions.find((p) => p.permId === perm.permId)
-    await revokePermission(userId.value, granted?.id ?? perm.permId)
+    permissionForm.value = permissionForm.value.filter((id) => id !== perm.permId)
   }
-  await loadDetail()
 }
 
 function typeName(typeId) {
@@ -241,7 +285,7 @@ onMounted(async () => {
   await Promise.all([
     loadDetail(),
     loadPasswords(),
-    auth.isAdmin ? listDepartments().then((v) => (departments.value = v)) : Promise.resolve(),
+    listDepartments().then((v) => (departments.value = v)),
     listPermissions().then((v) => (allPermissions.value = v)),
     listAccountTypes().then((v) => (accountTypes.value = v)),
   ])
@@ -269,6 +313,10 @@ onMounted(async () => {
       </div>
 
       <div class="section" style="padding-top: 0">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3)">
+          <h3>기본 정보</h3>
+          <button class="btn btn-primary btn-sm" :disabled="!isFormDirty" @click="submitDetail">저장하기</button>
+        </div>
         <p v-if="detailError" class="form-error">{{ detailError }}</p>
 
         <div class="form-grid" style="margin-bottom: var(--space-5)">
@@ -285,41 +333,47 @@ onMounted(async () => {
           </div>
         </div>
 
+        <template v-if="auth.isAdmin">
+          <h3 style="margin-bottom: var(--space-3)">역할</h3>
+          <div style="display: flex; gap: var(--space-6); margin-bottom: var(--space-2)">
+            <label v-for="role in ALL_ROLES" :key="role.code" class="checkbox-row">
+              <input type="checkbox" :checked="hasRole(role.code)" @change="toggleRole(role.code, $event.target.checked)" />
+              {{ role.label }}
+            </label>
+          </div>
+          <p class="field-hint" style="margin-bottom: var(--space-6)">체크 해제 시 기본값인 일반 사용자로 취급됩니다.</p>
+        </template>
+
+        <template v-if="visiblePermissions.length">
+          <h3 style="margin-bottom: var(--space-3)">개별 권한</h3>
+          <div style="display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-6)">
+            <label v-for="perm in visiblePermissions" :key="perm.permId" class="checkbox-row">
+              <input
+                type="checkbox"
+                :checked="hasPermission(perm.permId)"
+                @change="togglePermission(perm, $event.target.checked)"
+              />
+              {{ perm.permName }} <span class="text-faint" style="font-size: var(--text-xs)">({{ perm.permCode }})</span>
+            </label>
+          </div>
+        </template>
+      </div>
+
+      <div class="section">
+        <h3 style="margin-bottom: var(--space-3)">계정 관리</h3>
         <div class="form-actions" style="margin-bottom: var(--space-3); flex-wrap: wrap">
-          <button class="btn btn-primary btn-sm" @click="submitDetail">정보 저장하기</button>
           <button v-if="detail.isActive" class="btn btn-ghost btn-sm" @click="handleDeactivate">비활성화하기</button>
           <button v-else class="btn btn-ghost btn-sm" @click="handleActivate">다시 활성화하기</button>
           <button class="btn btn-ghost btn-sm" @click="handleResetPassword">임시 비밀번호 발급하기</button>
         </div>
         <div class="form-actions">
-          <button class="btn btn-danger btn-sm" @click="handleDelete">계정 완전 삭제하기</button>
+          <button class="btn btn-danger btn-sm" @click="handleDelete">계정 삭제하기</button>
         </div>
 
         <p v-if="tempPasswordResult" class="field-hint" style="margin-top: var(--space-4)">
           임시 비밀번호가 발급되었습니다: <strong>{{ tempPasswordResult.tempPassword }}</strong>
           (해당 직원에게 안전한 방법으로 전달해주세요.)
         </p>
-      </div>
-
-      <div class="section">
-        <template v-if="auth.isAdmin">
-          <h3 style="margin-bottom: var(--space-3)">역할</h3>
-          <div style="display: flex; gap: var(--space-6); margin-bottom: var(--space-2)">
-            <label v-for="role in ALL_ROLES" :key="role" class="checkbox-row">
-              <input type="checkbox" :checked="hasRole(role)" @change="toggleRole(role, $event.target.checked)" />
-              부서 관리자
-            </label>
-          </div>
-          <p class="field-hint" style="margin-bottom: var(--space-6)">체크 해제 시 기본값인 일반 사용자로 취급됩니다.</p>
-        </template>
-
-        <h3 style="margin-bottom: var(--space-3)">개별 권한</h3>
-        <div style="display: flex; flex-direction: column; gap: var(--space-2)">
-          <label v-for="perm in allPermissions" :key="perm.permId" class="checkbox-row">
-            <input type="checkbox" :checked="hasPermission(perm.permId)" @change="togglePermission(perm, $event.target.checked)" />
-            {{ perm.permName }} <span class="text-faint" style="font-size: var(--text-xs)">({{ perm.permCode }})</span>
-          </label>
-        </div>
       </div>
 
       <div class="section">

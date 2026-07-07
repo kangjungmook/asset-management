@@ -13,5 +13,7 @@ public interface RefreshTokenMapper {
 
     void revokeAllByUserId(@Param("userId") Integer userId);
 
+    void revoke(@Param("tokenId") String tokenId);
+
     void deleteAllByUserId(@Param("userId") Integer userId);
 }

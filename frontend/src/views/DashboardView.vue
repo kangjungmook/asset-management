@@ -4,12 +4,22 @@ import { listUsers } from '@/api/users'
 import { listDepartments } from '@/api/departments'
 import { listExpiringPasswords } from '@/api/passwords'
 import { listAuditLogs } from '@/api/auditLogs'
+import { actionLabel, targetLabel } from '@/utils/auditLog'
 
 const userCount = ref(0)
+const inactiveCount = ref(0)
 const deptCount = ref(0)
 const expiringCount = ref(0)
+const totalLogCount = ref(0)
 const recentLogs = ref([])
 const loading = ref(true)
+
+const today = new Date().toLocaleDateString('ko-KR', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  weekday: 'short',
+})
 
 onMounted(async () => {
   try {
@@ -20,9 +30,11 @@ onMounted(async () => {
       listAuditLogs({ page: 1, size: 8 }),
     ])
     userCount.value = users.length
+    inactiveCount.value = users.filter((u) => !u.isActive).length
     deptCount.value = depts.length
     expiringCount.value = expiring.length
     recentLogs.value = logPage.content
+    totalLogCount.value = logPage.totalElements
   } finally {
     loading.value = false
   }
@@ -36,9 +48,10 @@ onMounted(async () => {
         <h1>대시보드</h1>
         <p class="page-header__desc">사용자·부서·패스워드 관리대장 현황을 한눈에 확인합니다.</p>
       </div>
+      <div class="badge" style="height: 36px; padding: 0 var(--space-4)">{{ today }}</div>
     </div>
 
-    <div class="stat-grid" style="margin-bottom: var(--space-6)">
+    <div class="stat-grid" style="margin-bottom: var(--space-8)">
       <div class="stat-card">
         <div class="stat-card__head">
           <span class="stat-card__label">전체 사용자</span>
@@ -50,7 +63,7 @@ onMounted(async () => {
           </span>
         </div>
         <div class="stat-card__value">{{ userCount }}명</div>
-        <div class="stat-card__sub">등록된 전체 사용자 수</div>
+        <div class="stat-card__sub">비활성 {{ inactiveCount }}명 포함</div>
       </div>
 
       <div class="stat-card">
@@ -80,6 +93,21 @@ onMounted(async () => {
         <div class="stat-card__value">{{ expiringCount }}건</div>
         <div class="stat-card__sub">30일 이내 만료 예정</div>
       </div>
+
+      <div class="stat-card">
+        <div class="stat-card__head">
+          <span class="stat-card__label">전체 활동 기록</span>
+          <span class="stat-card__icon" style="background: var(--color-purple-tint); color: var(--color-purple)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 4h10l3 3v13H7z" />
+              <path d="M10 13h6" />
+              <path d="M10 17h4" />
+            </svg>
+          </span>
+        </div>
+        <div class="stat-card__value">{{ totalLogCount }}건</div>
+        <div class="stat-card__sub">누적 감사 로그</div>
+      </div>
     </div>
 
     <h3 style="margin-bottom: var(--space-3)">최근 활동</h3>
@@ -91,14 +119,16 @@ onMounted(async () => {
             <th>사용자</th>
             <th>액션</th>
             <th>대상</th>
+            <th>상세</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="log in recentLogs" :key="log.logId">
             <td class="text-muted">{{ log.createdAt?.replace('T', ' ').slice(0, 19) }}</td>
             <td>{{ log.userName || '-' }}</td>
-            <td><span class="code-tag">{{ log.action }}</span></td>
-            <td class="text-muted">{{ log.target }}</td>
+            <td><span class="code-tag">{{ actionLabel(log.action) }}</span></td>
+            <td class="text-muted">{{ targetLabel(log.target) }}</td>
+            <td class="text-muted">{{ log.detail || '-' }}</td>
           </tr>
         </tbody>
       </table>

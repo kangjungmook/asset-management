@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
+import { refreshTokens } from '@/api/tokenRefresh'
 import router from '@/router'
 
 const http = axios.create({
@@ -15,8 +16,6 @@ http.interceptors.request.use((config) => {
   return config
 })
 
-let refreshingPromise = null
-
 http.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -30,19 +29,8 @@ http.interceptors.response.use(
     if (response.status === 401 && !config._retried && auth.refreshToken) {
       config._retried = true
       try {
-        if (!refreshingPromise) {
-          refreshingPromise = axios
-            .post('/api/auth/refresh', { refreshToken: auth.refreshToken })
-            .then((res) => {
-              auth.setAccessToken(res.data.data.accessToken)
-              return res.data.data.accessToken
-            })
-            .finally(() => {
-              refreshingPromise = null
-            })
-        }
-        const newToken = await refreshingPromise
-        config.headers.Authorization = `Bearer ${newToken}`
+        const data = await refreshTokens()
+        config.headers.Authorization = `Bearer ${data.accessToken}`
         return http(config)
       } catch (refreshError) {
         auth.clear()

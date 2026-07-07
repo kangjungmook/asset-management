@@ -2,13 +2,20 @@ import { defineStore } from 'pinia'
 
 let toastSeq = 0
 let confirmResolver = null
+const SIDEBAR_KEY = 'ams.sidebarCollapsed'
 
 export const useUiStore = defineStore('ui', {
   state: () => ({
     toasts: [],
     confirmDialog: null,
+    sidebarCollapsed: localStorage.getItem(SIDEBAR_KEY) === '1',
+    sessionExpiryVisible: false,
   }),
   actions: {
+    toggleSidebar() {
+      this.sidebarCollapsed = !this.sidebarCollapsed
+      localStorage.setItem(SIDEBAR_KEY, this.sidebarCollapsed ? '1' : '0')
+    },
     pushToast(message, type = 'brand') {
       const id = ++toastSeq
       this.toasts.push({ id, message, type })

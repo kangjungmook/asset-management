@@ -35,9 +35,7 @@ function handleSearchInput() {
 }
 
 async function loadDepartments() {
-  if (auth.isAdmin) {
-    departments.value = await listDepartments()
-  }
+  departments.value = await listDepartments()
 }
 
 function openCreate() {

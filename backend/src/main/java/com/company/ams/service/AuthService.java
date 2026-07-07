@@ -76,6 +76,7 @@ public class AuthService {
         refreshTokenMapper.revokeAllByUserId(userId);
     }
 
+    @Transactional
     public TokenResponse refresh(String refreshToken) {
         if (!jwtProvider.isValid(refreshToken)) {
             throw new UnauthorizedException("유효하지 않은 토큰입니다.");
@@ -97,7 +98,12 @@ public class AuthService {
             throw new UnauthorizedException("계정을 사용할 수 없습니다.");
         }
         AuthPrincipal principal = buildPrincipal(user);
-        return new TokenResponse(jwtProvider.generateAccessToken(principal));
+        String newAccessToken = jwtProvider.generateAccessToken(principal);
+
+        refreshTokenMapper.revoke(claims.getId());
+        String newRefreshToken = issueRefreshToken(userId);
+
+        return new TokenResponse(newAccessToken, newRefreshToken);
     }
 
     private String issueRefreshToken(Integer userId) {

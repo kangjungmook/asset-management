@@ -39,7 +39,7 @@ function openEdit(type) {
   showForm.value = true
 }
 
-function closeForm() {
+function closeForm() {  
   showForm.value = false
 }
 
