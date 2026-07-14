@@ -1,6 +1,7 @@
 :root {
   /* ---------- Typography ---------- */
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "Apple SD Gothic Neo", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-serif: "Noto Serif KR", "Source Serif 4", Georgia, serif;
 
   --text-xs:   clamp(0.6875rem, 0.67rem + 0.08vw, 0.72rem);
@@ -27,43 +28,57 @@
   --space-16: 64px;
 
   /* ---------- Radius / Motion ---------- */
-  --radius-sm: 4px;
-  --radius-md: 6px;
+  --radius-sm: 5px;
+  --radius-md: 7px;
   --radius-lg: 8px;
   --radius-xl: 10px;
+  --radius-2xl: 12px;
+  --radius-3xl: 14px;
+  --radius-full: 999px;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --duration-fast: 120ms;
   --duration-base: 180ms;
 
-  /* ---------- Color: light ---------- */
-  --color-bg: #F6F7F9;
+  /* ---------- Color: light (Keyvault palette) ---------- */
+  --color-bg: #F4F6F7;
   --color-bg-raised: #FFFFFF;
-  --color-bg-sunken: #FAFBFC;
-  --color-bg-input: #F4F5F7;
-  --color-border: #E7E9EE;
-  --color-border-strong: #E2E5EA;
+  --color-bg-sunken: #F7F9F8;
+  --color-bg-input: #F9FBFA;
+  --color-border: #EDF1F0;
+  --color-border-strong: #E4E9E7;
+  --color-border-input: #D8E0DE;
 
-  --color-text: #15181D;
-  --color-text-muted: #5C6573;
-  --color-text-faint: #9AA1AC;
+  --color-heading: #0C1F1C;
+  --color-heading-soft: #22302C;
+  --color-text: #33413D;
+  --color-text-muted: #6E7C78;
+  --color-text-faint: #8A9793;
+  --color-text-faintest: #B0BAB6;
 
   --color-brand: #0F6B64;
-  --color-brand-hover: #0B534E;
-  --color-brand-tint: #E3F1EE;
+  --color-brand-hover: #0A524C;
+  --color-brand-light: #128A7E;
+  --color-brand-tint: #E9F3F1;
+  --color-brand-tint-soft: #F3F8F7;
   --color-brand-contrast: #FFFFFF;
 
-  --color-success: #15824A;
-  --color-success-tint: #E4F6EC;
-  --color-warning: #B5740E;
-  --color-warning-tint: #FBF0DC;
-  --color-danger: #C73A2B;
-  --color-danger-tint: #FBE7E5;
-  --color-purple: #6B46C1;
-  --color-purple-tint: #EFEAFB;
-  --color-neutral: #5A6270;
-  --color-neutral-tint: #EEF0F3;
+  --color-success: #0F7A5A;
+  --color-success-tint: #E4F3EC;
+  --color-warning: #B5730E;
+  --color-warning-tint: #FBF0DA;
+  --color-danger: #C0392B;
+  --color-danger-tint: #FBE9E7;
+  --color-info: #2A6F8E;
+  --color-info-tint: #E5F0F5;
+  --color-neutral: #5C6A66;
+  --color-neutral-tint: #EEF2F1;
 
-  --shadow-sm: 0 1px 2px rgba(20, 24, 31, 0.06);
-  --shadow-md: 0 14px 44px rgba(20, 24, 31, 0.12);
-  --shadow-lg: 0 24px 60px rgba(15, 20, 30, 0.30);
+  /* legacy alias kept for components not yet migrated */
+  --color-purple: var(--color-info);
+  --color-purple-tint: var(--color-info-tint);
+
+  --shadow-sm: 0 1px 2px rgba(16, 40, 36, .04);
+  --shadow-md: 0 14px 40px rgba(12, 31, 28, .14);
+  --shadow-lg: 0 24px 64px rgba(12, 31, 28, .28);
+  --shadow-toast: 0 12px 36px rgba(12, 31, 28, .32);
 }

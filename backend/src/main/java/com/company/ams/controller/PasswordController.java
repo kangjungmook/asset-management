@@ -3,6 +3,7 @@ package com.company.ams.controller;
 import com.company.ams.common.ApiResponse;
 import com.company.ams.common.exception.NotFoundException;
 import com.company.ams.dto.PageResponse;
+import com.company.ams.dto.PasswordRejectRequest;
 import com.company.ams.dto.PasswordRequest;
 import com.company.ams.entity.PasswordEntry;
 import com.company.ams.entity.User;
@@ -31,17 +32,19 @@ public class PasswordController {
     public ApiResponse<PageResponse<PasswordEntry>> findAll(
             @RequestParam(required = false) Integer userId,
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer typeId,
+            @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
         AuthPrincipal me = currentUser.get();
         if (me.isAdmin()) {
-            return ApiResponse.success(passwordService.findAll(null, userId, keyword, page, size));
+            return ApiResponse.success(passwordService.findAll(null, userId, keyword, typeId, status, page, size));
         }
         if (me.hasRole("DEPT_MANAGER")) {
-            return ApiResponse.success(passwordService.findAll(me.getDeptId(), userId, keyword, page, size));
+            return ApiResponse.success(passwordService.findAll(me.getDeptId(), userId, keyword, typeId, status, page, size));
         }
-        return ApiResponse.success(passwordService.findAll(null, me.getUserId(), keyword, page, size));
+        return ApiResponse.success(passwordService.findAll(null, me.getUserId(), keyword, typeId, status, page, size));
     }
 
     @GetMapping("/expiring")
@@ -56,8 +59,20 @@ public class PasswordController {
         return ApiResponse.success(passwordService.findExpiring(null, me.getUserId()));
     }
 
+    @GetMapping("/summary")
+    public ApiResponse<com.company.ams.dto.PasswordSummaryResponse> summary() {
+        AuthPrincipal me = currentUser.get();
+        if (me.isAdmin()) {
+            return ApiResponse.success(passwordService.getSummary(null, null));
+        }
+        if (me.hasRole("DEPT_MANAGER")) {
+            return ApiResponse.success(passwordService.getSummary(me.getDeptId(), null));
+        }
+        return ApiResponse.success(passwordService.getSummary(null, me.getUserId()));
+    }
+
     @PostMapping
-    public ApiResponse<PasswordEntry> create(@Valid @RequestBody PasswordRequest request) {
+    public ApiResponse<PasswordEntry> create(@  Valid @RequestBody PasswordRequest request) {
         AuthPrincipal me = currentUser.get();
         User target = findUser(request.getUserId());
         authz.requirePasswordAccess(me, target.getUserId(), target.getDeptId());
@@ -81,6 +96,22 @@ public class PasswordController {
         authz.requirePasswordAccess(me, entry.getUserId(), entry.getUserDeptId());
         passwordService.delete(id, me);
         return ApiResponse.success(null, "패스워드 관리대장이 삭제되었습니다.");
+    }
+
+    @PostMapping("/{id}/approve")
+    public ApiResponse<PasswordEntry> approve(@PathVariable Integer id) {
+        AuthPrincipal me = currentUser.get();
+        PasswordEntry entry = passwordService.findById(id);
+        authz.requirePasswordApprove(me, entry.getUserDeptId());
+        return ApiResponse.success(passwordService.approve(id, me), "승인되었습니다.");
+    }
+
+    @PostMapping("/{id}/reject")
+    public ApiResponse<PasswordEntry> reject(@PathVariable Integer id, @Valid @RequestBody PasswordRejectRequest request) {
+        AuthPrincipal me = currentUser.get();
+        PasswordEntry entry = passwordService.findById(id);
+        authz.requirePasswordApprove(me, entry.getUserDeptId());
+        return ApiResponse.success(passwordService.reject(id, request, me), "반려되었습니다.");
     }
 
     private User findUser(Integer userId) {

@@ -12,5 +12,7 @@ public class AuditLog {
     private String action;
     private String target;
     private String detail;
+    private String ipAddress;
+    private String result;
     private LocalDateTime createdAt;
 }

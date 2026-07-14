@@ -10,11 +10,10 @@ import com.company.ams.entity.RefreshToken;
 import com.company.ams.entity.User;
 import com.company.ams.mapper.RefreshTokenMapper;
 import com.company.ams.mapper.UserMapper;
-import com.company.ams.mapper.UserPermissionMapper;
-import com.company.ams.mapper.UserRoleMapper;
 import com.company.ams.security.AuthPrincipal;
 import com.company.ams.security.Authz;
 import com.company.ams.security.JwtProvider;
+import com.company.ams.security.PrincipalFactory;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,28 +28,29 @@ import java.util.UUID;
 public class AuthService {
 
     private final UserMapper userMapper;
-    private final UserRoleMapper userRoleMapper;
-    private final UserPermissionMapper userPermissionMapper;
     private final RefreshTokenMapper refreshTokenMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final AuditLogService auditLogService;
     private final UserService userService;
     private final Authz authz;
+    private final PrincipalFactory principalFactory;
 
     @Transactional
     public LoginResponse login(LoginRequest request) {
         User user = userMapper.findByEmployeeNo(request.getEmployeeNo());
         if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            auditLogService.log(null, "LOGIN", "user:" + request.getEmployeeNo(), "로그인 실패", "실패");
             throw new UnauthorizedException("사번 또는 비밀번호가 올바르지 않습니다.");
         }
         if (!Boolean.TRUE.equals(user.getIsActive())) {
             throw new UnauthorizedException("비활성화된 계정입니다. 관리자에게 문의하세요.");
         }
 
-        AuthPrincipal principal = buildPrincipal(user);
+        AuthPrincipal principal = principalFactory.from(user);
         String accessToken = jwtProvider.generateAccessToken(principal);
         String refreshToken = issueRefreshToken(user.getUserId());
+        userMapper.updateLastLogin(user.getUserId());
 
         auditLogService.log(user.getUserId(), "LOGIN", "user:" + user.getUserId(),
                 "로그인: " + user.getEmployeeNo());
@@ -97,7 +97,7 @@ public class AuthService {
         if (user == null || !Boolean.TRUE.equals(user.getIsActive())) {
             throw new UnauthorizedException("계정을 사용할 수 없습니다.");
         }
-        AuthPrincipal principal = buildPrincipal(user);
+        AuthPrincipal principal = principalFactory.from(user);
         String newAccessToken = jwtProvider.generateAccessToken(principal);
 
         refreshTokenMapper.revoke(claims.getId());
@@ -131,16 +131,4 @@ public class AuthService {
         return userService.resetPassword(userId, actor);
     }
 
-    private AuthPrincipal buildPrincipal(User user) {
-        return new AuthPrincipal(
-                user.getUserId(),
-                user.getEmployeeNo(),
-                user.getName(),
-                Boolean.TRUE.equals(user.getIsAdmin()),
-                user.getDeptId(),
-                user.getDeptName(),
-                userRoleMapper.findRoleCodesByUserId(user.getUserId()),
-                userPermissionMapper.findPermCodesByUserId(user.getUserId())
-        );
-    }
 }

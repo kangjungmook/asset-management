@@ -2,6 +2,7 @@ package com.company.ams.common.exception;
 
 import com.company.ams.common.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,6 +26,13 @@ public class GlobalExceptionHandler {
                 .map(fe -> fe.getDefaultMessage())
                 .orElse("입력값이 올바르지 않습니다.");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.fail(message));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        log.error("DataIntegrityViolationException", e);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.fail("다른 데이터에서 참조 중이라 처리할 수 없습니다."));
     }
 
     @ExceptionHandler(Exception.class)

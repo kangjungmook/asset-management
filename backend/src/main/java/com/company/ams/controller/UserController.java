@@ -72,6 +72,9 @@ public class UserController {
         } else {
             throw new ForbiddenException();
         }
+        if (request.getRole() != null && !request.getRole().isBlank() && !me.isAdmin()) {
+            throw new ForbiddenException();
+        }
         return ApiResponse.success(userService.create(request, me), "사용자가 생성되었습니다.");
     }
 

@@ -11,4 +11,6 @@ public class PermissionRequest {
 
     @NotBlank(message = "권한명을 입력해주세요.")
     private String permName;
+
+    private String description;
 }

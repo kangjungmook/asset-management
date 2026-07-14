@@ -13,4 +13,6 @@ public class UserCreateRequest {
     private String name;
 
     private Integer deptId;
+
+    private String role;
 }

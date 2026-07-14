@@ -13,7 +13,7 @@ const accountTypes = ref([])
 const loading = ref(false)
 const showForm = ref(false)
 const editingId = ref(null)
-const form = ref({ typeName: '' })
+const form = ref({ typeName: '', description: '' })
 const errorMessage = ref('')
 
 async function load() {
@@ -27,14 +27,14 @@ async function load() {
 
 function openCreate() {
   editingId.value = null
-  form.value = { typeName: '' }
+  form.value = { typeName: '', description: '' }
   errorMessage.value = ''
   showForm.value = true
 }
 
 function openEdit(type) {
   editingId.value = type.typeId
-  form.value = { typeName: type.typeName }
+  form.value = { typeName: type.typeName, description: type.description }
   errorMessage.value = ''
   showForm.value = true
 }
@@ -99,7 +99,11 @@ onMounted(load)
         <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
         <div class="field">
           <label for="typeName">계정유형명</label>
-          <input id="typeName" v-model="form.typeName" class="input" type="text" placeholder="예: 서버, NAS, SVN, GitLab" />
+          <input id="typeName" v-model="form.typeName" class="input" type="text" />
+        </div>
+        <div class="field">
+          <label for="typeDesc">설명</label>
+          <input id="typeDesc" v-model="form.description" class="input" type="text" />
         </div>
         <div class="form-actions">
           <button class="btn btn-primary" @click="submitForm">저장하기</button>
@@ -108,26 +112,25 @@ onMounted(load)
       </div>
     </div>
 
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>계정유형명</th>
-            <th>등록일</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="type in accountTypes" :key="type.typeId">
-            <td>{{ type.typeName }}</td>
-            <td class="text-muted">{{ type.createdAt?.slice(0, 10) }}</td>
-            <td>
-              <button class="btn btn-ghost btn-sm" @click="openEdit(type)">수정하기</button>
-              <button class="btn btn-danger btn-sm" @click="removeType(type)">삭제하기</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-4)">
+      <div v-for="type in accountTypes" :key="type.typeId" class="stat-card">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <span class="stat-card__icon" style="width: 38px; height: 38px; background: var(--color-brand-tint); color: var(--color-brand)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8c4.42 0 8-1.34 8-3s-3.58-3-8-3-8 1.34-8 3 3.58 3 8 3z" /><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5" /><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" /></svg>
+          </span>
+          <span style="display: flex; gap: 4px">
+            <button class="btn btn-ghost btn-sm" @click="openEdit(type)">수정하기</button>
+            <button class="btn btn-danger btn-sm" @click="removeType(type)">삭제하기</button>
+          </span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: var(--space-2); margin-top: var(--space-3)">
+          <div style="font-size: 15.5px; font-weight: 700; color: var(--color-heading)">{{ type.typeName }}</div>
+        </div>
+        <div class="stat-card__sub" style="margin-top: var(--space-2); line-height: 1.5">{{ type.description || '설명 없음' }}</div>
+        <div style="font-size: var(--text-xs); color: var(--color-text-faint); margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--color-border)">
+          등록 계정 <strong style="font-family: var(--font-mono); color: var(--color-brand-hover)">{{ type.accountCount ?? 0 }}</strong>개
+        </div>
+      </div>
       <p v-if="!loading && accountTypes.length === 0" class="empty-state">등록된 계정유형이 없습니다.</p>
     </div>
   </div>

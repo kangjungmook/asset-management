@@ -8,5 +8,7 @@ import java.time.LocalDateTime;
 public class AccountType {
     private Integer typeId;
     private String typeName;
+    private String description;
+    private Integer accountCount;
     private LocalDateTime createdAt;
 }

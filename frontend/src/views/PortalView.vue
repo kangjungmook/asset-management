@@ -101,6 +101,9 @@ onMounted(async () => {
         <div class="profile-card__name">{{ me.name }}</div>
         <div class="profile-card__meta">사번 {{ me.employeeNo }} · {{ me.deptName || '미배정' }}</div>
       </div>
+      <RouterLink to="/change-password" class="btn btn-ghost btn-sm" style="margin-left: auto">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>비밀번호 변경
+      </RouterLink>
     </div>
 
     <div class="stat-grid" style="margin-top: var(--space-5)">
@@ -121,7 +124,7 @@ onMounted(async () => {
       <div class="stat-card">
         <div class="stat-card__head">
           <span class="stat-card__label">보유 개별 권한</span>
-          <span class="stat-card__icon" style="background: var(--color-purple-tint); color: var(--color-purple)">
+          <span class="stat-card__icon" style="background: var(--color-info-tint); color: var(--color-info)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" />
               <path d="M9 12l2 2 4-4" />

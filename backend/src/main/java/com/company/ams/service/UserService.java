@@ -11,6 +11,7 @@ import com.company.ams.dto.UserUpdateRequest;
 import com.company.ams.entity.Permission;
 import com.company.ams.entity.User;
 import com.company.ams.mapper.AuditLogMapper;
+import com.company.ams.mapper.NotificationMapper;
 import com.company.ams.mapper.PasswordMapper;
 import com.company.ams.mapper.PermissionMapper;
 import com.company.ams.mapper.RefreshTokenMapper;
@@ -43,6 +44,7 @@ public class UserService {
     private final PermissionMapper permissionMapper;
     private final PasswordMapper passwordMapper;
     private final AuditLogMapper auditLogMapper;
+    private final NotificationMapper notificationMapper;
     private final RefreshTokenMapper refreshTokenMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuditLogService auditLogService;
@@ -81,6 +83,9 @@ public class UserService {
         if (userMapper.existsByEmployeeNo(request.getEmployeeNo())) {
             throw new BusinessException("이미 존재하는 사번입니다.", HttpStatus.CONFLICT);
         }
+        if ("DEPT_MANAGER".equals(request.getRole()) && request.getDeptId() == null) {
+            throw new BusinessException("부서 관리자는 부서를 지정해야 합니다.");
+        }
         User user = new User();
         user.setEmployeeNo(request.getEmployeeNo());
         user.setPassword(passwordEncoder.encode(DEFAULT_INITIAL_PASSWORD));
@@ -91,6 +96,15 @@ public class UserService {
         userMapper.insert(user);
         auditLogService.log(actor.getUserId(), "USER_CREATE", "user:" + user.getUserId(),
                 "사용자 생성: " + user.getEmployeeNo());
+
+        if (request.getRole() != null && !request.getRole().isBlank()) {
+            if (!VALID_ROLES.contains(request.getRole())) {
+                throw new BusinessException("유효하지 않은 역할입니다.");
+            }
+            userRoleMapper.insert(user.getUserId(), request.getRole(), actor.getUserId());
+            auditLogService.log(actor.getUserId(), "ROLE_GRANT", "user:" + user.getUserId(),
+                    "역할 부여: " + request.getRole());
+        }
         return user;
     }
 
@@ -114,6 +128,13 @@ public class UserService {
         if (user == null) {
             throw new NotFoundException("사용자를 찾을 수 없습니다.");
         }
+        if (userId.equals(actor.getUserId())) {
+            throw new BusinessException("본인 계정은 삭제할 수 없습니다.");
+        }
+        if (Boolean.TRUE.equals(user.getIsAdmin()) && Boolean.TRUE.equals(user.getIsActive())
+                && userMapper.countActiveAdmins() <= 1) {
+            throw new BusinessException("마지막 남은 활성 관리자 계정은 삭제할 수 없습니다.");
+        }
         if (passwordMapper.existsByUserId(userId)) {
             throw new BusinessException("패스워드 관리대장에 등록된 계정이 있어 삭제할 수 없습니다. 비활성화를 이용해주세요.", HttpStatus.CONFLICT);
         }
@@ -123,10 +144,8 @@ public class UserService {
 
         userRoleMapper.deleteAllByUserId(userId);
         userPermissionMapper.deleteAllByUserId(userId);
-        passwordMapper.nullifyRequester(userId);
-        passwordMapper.nullifyApprover(userId);
-        passwordMapper.nullifyConfirmedBy(userId);
         refreshTokenMapper.deleteAllByUserId(userId);
+        notificationMapper.deleteAllByUserId(userId);
         auditLogService.log(actor.getUserId(), "USER_DELETE", "user:" + userId,
                 "사용자 삭제: " + user.getEmployeeNo());
         auditLogMapper.nullifyUser(userId);
@@ -138,6 +157,13 @@ public class UserService {
         User user = userMapper.findById(userId);
         if (user == null) {
             throw new NotFoundException("사용자를 찾을 수 없습니다.");
+        }
+        if (userId.equals(actor.getUserId())) {
+            throw new BusinessException("본인 계정은 비활성화할 수 없습니다.");
+        }
+        if (Boolean.TRUE.equals(user.getIsAdmin()) && Boolean.TRUE.equals(user.getIsActive())
+                && userMapper.countActiveAdmins() <= 1) {
+            throw new BusinessException("마지막 남은 활성 관리자 계정은 비활성화할 수 없습니다.");
         }
         userMapper.updateActive(userId, false);
         auditLogService.log(actor.getUserId(), "USER_DEACTIVATE", "user:" + userId,
@@ -163,6 +189,9 @@ public class UserService {
         }
         if (!VALID_ROLES.contains(request.getRole())) {
             throw new BusinessException("유효하지 않은 역할입니다.");
+        }
+        if ("DEPT_MANAGER".equals(request.getRole()) && user.getDeptId() == null) {
+            throw new BusinessException("부서 관리자는 부서를 지정해야 합니다.");
         }
         if (userRoleMapper.exists(userId, request.getRole())) {
             return;

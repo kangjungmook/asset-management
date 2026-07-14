@@ -6,29 +6,33 @@
         <id property="permId" column="perm_id"/>
         <result property="permCode" column="perm_code"/>
         <result property="permName" column="perm_name"/>
+        <result property="description" column="description"/>
         <result property="createdAt" column="created_at"/>
+        <result property="holderCount" column="holder_count"/>
     </resultMap>
 
     <select id="findAll" resultMap="permissionResultMap">
-        SELECT perm_id, perm_code, perm_name, created_at
-        FROM tb_permission
-        ORDER BY perm_id
+        SELECT p.perm_id, p.perm_code, p.perm_name, p.description, p.created_at,
+               (SELECT COUNT(*) FROM tb_user_permission up WHERE up.perm_id = p.perm_id) AS holder_count
+        FROM tb_permission p
+        ORDER BY p.perm_id
     </select>
 
     <select id="findById" resultMap="permissionResultMap">
-        SELECT perm_id, perm_code, perm_name, created_at
-        FROM tb_permission
-        WHERE perm_id = #{permId}
+        SELECT p.perm_id, p.perm_code, p.perm_name, p.description, p.created_at,
+               (SELECT COUNT(*) FROM tb_user_permission up WHERE up.perm_id = p.perm_id) AS holder_count
+        FROM tb_permission p
+        WHERE p.perm_id = #{permId}
     </select>
 
     <insert id="insert" parameterType="com.company.ams.entity.Permission" useGeneratedKeys="true" keyProperty="permId">
-        INSERT INTO tb_permission (perm_code, perm_name)
-        VALUES (#{permCode}, #{permName})
+        INSERT INTO tb_permission (perm_code, perm_name, description)
+        VALUES (#{permCode}, #{permName}, #{description})
     </insert>
 
     <update id="update" parameterType="com.company.ams.entity.Permission">
         UPDATE tb_permission
-        SET perm_code = #{permCode}, perm_name = #{permName}
+        SET perm_code = #{permCode}, perm_name = #{permName}, description = #{description}
         WHERE perm_id = #{permId}
     </update>
 

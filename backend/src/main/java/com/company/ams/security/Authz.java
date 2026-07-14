@@ -62,4 +62,18 @@ public class Authz {
         }
         throw new ForbiddenException();
     }
+
+    /** 패스워드 대장 승인: ADMIN, 같은 부서 매니저, 또는 PASSWORD.APPROVE 권한 보유자면 통과 */
+    public void requirePasswordApprove(AuthPrincipal principal, Integer targetDeptId) {
+        if (principal.isAdmin()) {
+            return;
+        }
+        if (principal.hasRole("DEPT_MANAGER") && targetDeptId != null && targetDeptId.equals(principal.getDeptId())) {
+            return;
+        }
+        if (principal.hasPermission("PASSWORD.APPROVE")) {
+            return;
+        }
+        throw new ForbiddenException();
+    }
 }

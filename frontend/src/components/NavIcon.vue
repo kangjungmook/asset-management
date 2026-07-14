@@ -19,6 +19,7 @@ const ICONS = {
   'account-types': ['M4 7h16v10H4z', 'M4 11h16', 'M8 15h.01', 'M12 15h4'],
   'audit-log': ['M7 4h10l3 3v13H7z', 'M14 4v4h4', 'M10 13h6', 'M10 17h4'],
   home: ['M4 11l8-7 8 7', 'M6 10v9h12v-9'],
+  'system-reset': ['M3 12a9 9 0 1 1 2.64 6.36', 'M3 21v-6h6'],
 }
 
 const paths = computed(() => ICONS[props.name] || [])

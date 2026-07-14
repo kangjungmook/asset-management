@@ -12,13 +12,16 @@
         <result property="isAdmin" column="is_admin"/>
         <result property="isActive" column="is_active"/>
         <result property="mustChangePassword" column="must_change_password"/>
+        <result property="isDeptManager" column="is_dept_manager"/>
+        <result property="lastLoginAt" column="last_login_at"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
     <sql id="selectUser">
         SELECT u.user_id, u.employee_no, u.password, u.name, u.dept_id, d.dept_name,
-               u.is_admin, u.is_active, u.must_change_password, u.created_at, u.updated_at
+               u.is_admin, u.is_active, u.must_change_password, u.last_login_at, u.created_at, u.updated_at,
+               EXISTS(SELECT 1 FROM tb_user_role r WHERE r.user_id = u.user_id AND r.role = 'DEPT_MANAGER') AS is_dept_manager
         FROM tb_user u
         LEFT JOIN tb_department d ON d.dept_id = u.dept_id
     </sql>
@@ -72,5 +75,31 @@
     <delete id="deleteById">
         DELETE FROM tb_user WHERE user_id = #{userId}
     </delete>
+
+    <update id="updateLastLogin">
+        UPDATE tb_user SET last_login_at = NOW() WHERE user_id = #{userId}
+    </update>
+
+    <select id="countActiveAdmins" resultType="int">
+        SELECT COUNT(*) FROM tb_user WHERE is_admin = 1 AND is_active = 1
+    </select>
+
+    <select id="findApprovalRecipientUserIds" resultType="int">
+        SELECT DISTINCT u.user_id
+        FROM tb_user u
+        WHERE u.is_active = 1
+          AND u.user_id != #{excludeUserId}
+          AND (
+            (
+                #{deptId} IS NOT NULL AND u.dept_id = #{deptId}
+                AND u.user_id IN (SELECT ur.user_id FROM tb_user_role ur WHERE ur.role = 'DEPT_MANAGER')
+            )
+            OR u.user_id IN (
+                SELECT up.user_id FROM tb_user_permission up
+                JOIN tb_permission p ON p.perm_id = up.perm_id
+                WHERE p.perm_code = 'PASSWORD.APPROVE'
+            )
+          )
+    </select>
 
 </mapper>

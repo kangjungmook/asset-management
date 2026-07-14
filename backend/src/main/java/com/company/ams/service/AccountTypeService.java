@@ -26,6 +26,7 @@ public class AccountTypeService {
     public AccountType create(AccountTypeRequest request, AuthPrincipal actor) {
         AccountType accountType = new AccountType();
         accountType.setTypeName(request.getTypeName());
+        accountType.setDescription(request.getDescription());
         accountTypeMapper.insert(accountType);
         auditLogService.log(actor.getUserId(), "ACCOUNT_TYPE_CREATE", "type:" + accountType.getTypeId(),
                 "계정유형 생성: " + accountType.getTypeName());
@@ -39,6 +40,7 @@ public class AccountTypeService {
             throw new NotFoundException("계정유형을 찾을 수 없습니다.");
         }
         accountType.setTypeName(request.getTypeName());
+        accountType.setDescription(request.getDescription());
         accountTypeMapper.update(accountType);
         auditLogService.log(actor.getUserId(), "ACCOUNT_TYPE_UPDATE", "type:" + typeId,
                 "계정유형 수정: " + accountType.getTypeName());

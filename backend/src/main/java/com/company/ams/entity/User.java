@@ -15,6 +15,8 @@ public class User {
     private Boolean isAdmin;
     private Boolean isActive;
     private Boolean mustChangePassword;
+    private Boolean isDeptManager;
+    private LocalDateTime lastLoginAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

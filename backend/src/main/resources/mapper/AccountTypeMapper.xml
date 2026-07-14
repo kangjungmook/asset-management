@@ -5,29 +5,35 @@
     <resultMap id="accountTypeResultMap" type="com.company.ams.entity.AccountType">
         <id property="typeId" column="type_id"/>
         <result property="typeName" column="type_name"/>
+        <result property="description" column="description"/>
+        <result property="accountCount" column="account_count"/>
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
+    <sql id="selectColumns">
+        SELECT t.type_id, t.type_name, t.description, t.created_at,
+               (SELECT COUNT(*) FROM tb_password p WHERE p.type_id = t.type_id) AS account_count
+        FROM tb_account_type t
+    </sql>
+
     <select id="findAll" resultMap="accountTypeResultMap">
-        SELECT type_id, type_name, created_at
-        FROM tb_account_type
-        ORDER BY type_id
+        <include refid="selectColumns"/>
+        ORDER BY t.type_id
     </select>
 
     <select id="findById" resultMap="accountTypeResultMap">
-        SELECT type_id, type_name, created_at
-        FROM tb_account_type
-        WHERE type_id = #{typeId}
+        <include refid="selectColumns"/>
+        WHERE t.type_id = #{typeId}
     </select>
 
     <insert id="insert" parameterType="com.company.ams.entity.AccountType" useGeneratedKeys="true" keyProperty="typeId">
-        INSERT INTO tb_account_type (type_name)
-        VALUES (#{typeName})
+        INSERT INTO tb_account_type (type_name, description)
+        VALUES (#{typeName}, #{description})
     </insert>
 
     <update id="update" parameterType="com.company.ams.entity.AccountType">
         UPDATE tb_account_type
-        SET type_name = #{typeName}
+        SET type_name = #{typeName}, description = #{description}
         WHERE type_id = #{typeId}
     </update>
 

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.List;
 
 @Component
 public class JwtProvider {
@@ -81,19 +80,5 @@ public class JwtProvider {
 
     public boolean isRefreshToken(Claims claims) {
         return "refresh".equals(claims.get("type"));
-    }
-
-    public AuthPrincipal toPrincipal(Claims claims) {
-        Integer deptId = claims.get("deptId") != null ? ((Number) claims.get("deptId")).intValue() : null;
-        return new AuthPrincipal(
-                Integer.valueOf(claims.getSubject()),
-                claims.get("employeeNo", String.class),
-                claims.get("name", String.class),
-                Boolean.TRUE.equals(claims.get("admin", Boolean.class)),
-                deptId,
-                claims.get("deptName", String.class),
-                (List<String>) claims.get("roles"),
-                (List<String>) claims.get("permissions")
-        );
     }
 }

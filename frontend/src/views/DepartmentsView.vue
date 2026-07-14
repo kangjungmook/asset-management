@@ -85,7 +85,7 @@ onMounted(load)
     <div class="page-header">
       <div>
         <h1>부서 관리</h1>
-        <p class="page-header__desc">회사 조직 부서를 등록하고 관리합니다.</p>
+        <p class="page-header__desc">부서와 부서 관리자를 관리합니다.</p>
       </div>
       <button class="btn btn-primary" @click="openCreate">부서 추가하기</button>
     </div>
@@ -113,17 +113,25 @@ onMounted(load)
         <thead>
           <tr>
             <th>부서명</th>
-            <th>등록일</th>
-            <th></th>
+            <th>부서 관리자</th>
+            <th>인원</th>
+            <th style="text-align: right">관리</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="dept in departments" :key="dept.deptId">
-            <td>{{ dept.deptName }}</td>
-            <td class="text-muted">{{ dept.createdAt?.slice(0, 10) }}</td>
-            <td>
-              <button class="btn btn-ghost btn-sm" @click="openEdit(dept)">수정하기</button>
-              <button class="btn btn-danger btn-sm" @click="removeDept(dept)">삭제하기</button>
+            <td style="font-weight: 600; color: var(--color-heading-soft)">{{ dept.deptName }}</td>
+            <td class="text-muted">{{ dept.managerName || '미지정' }}</td>
+            <td class="text-muted" style="font-family: var(--font-mono)">{{ dept.memberCount ?? 0 }}명</td>
+            <td style="text-align: right">
+              <span style="display: inline-flex; gap: 4px">
+                <button class="icon-btn" title="수정하기" @click="openEdit(dept)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
+                </button>
+                <button class="icon-btn icon-btn--danger" title="삭제하기" @click="removeDept(dept)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /></svg>
+                </button>
+              </span>
             </td>
           </tr>
         </tbody>

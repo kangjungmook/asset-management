@@ -18,12 +18,58 @@ const ACTION_LABELS = {
   PASSWORD_ENTRY_CREATE: '패스워드 관리대장 등록',
   PASSWORD_ENTRY_UPDATE: '패스워드 관리대장 수정',
   PASSWORD_ENTRY_DELETE: '패스워드 관리대장 삭제',
+  PASSWORD_ENTRY_APPROVE: '패스워드 관리대장 승인',
+  PASSWORD_ENTRY_REJECT: '패스워드 관리대장 반려',
   DEPARTMENT_CREATE: '부서 생성',
   DEPARTMENT_UPDATE: '부서 수정',
   DEPARTMENT_DELETE: '부서 삭제',
   ACCOUNT_TYPE_CREATE: '계정유형 생성',
   ACCOUNT_TYPE_UPDATE: '계정유형 수정',
   ACCOUNT_TYPE_DELETE: '계정유형 삭제',
+  SYSTEM_RESET: '시스템 전체 초기화',
+  SYSTEM_RESET_USERS: '사용자 초기화',
+  SYSTEM_RESET_DEPARTMENTS: '부서 초기화',
+  SYSTEM_RESET_PERMISSIONS: '권한 초기화',
+  SYSTEM_RESET_ACCOUNT_TYPES: '계정유형 초기화',
+  SYSTEM_RESET_PASSWORDS: '패스워드 관리대장 초기화',
+  SYSTEM_RESET_AUDIT_LOGS: '감사 로그 초기화',
+}
+
+const ACTION_TONES = {
+  LOGIN: 'neutral',
+  LOGOUT: 'neutral',
+  USER_CREATE: 'info',
+  USER_UPDATE: 'neutral',
+  USER_DELETE: 'danger',
+  USER_DEACTIVATE: 'danger',
+  USER_ACTIVATE: 'success',
+  ROLE_GRANT: 'success',
+  ROLE_REVOKE: 'warning',
+  PERMISSION_GRANT: 'success',
+  PERMISSION_REVOKE: 'warning',
+  PASSWORD_RESET: 'warning',
+  PASSWORD_CHANGE: 'brand',
+  PERMISSION_CREATE: 'info',
+  PERMISSION_UPDATE: 'neutral',
+  PERMISSION_DELETE: 'danger',
+  PASSWORD_ENTRY_CREATE: 'brand',
+  PASSWORD_ENTRY_UPDATE: 'brand',
+  PASSWORD_ENTRY_DELETE: 'danger',
+  PASSWORD_ENTRY_APPROVE: 'success',
+  PASSWORD_ENTRY_REJECT: 'danger',
+  DEPARTMENT_CREATE: 'info',
+  DEPARTMENT_UPDATE: 'neutral',
+  DEPARTMENT_DELETE: 'danger',
+  ACCOUNT_TYPE_CREATE: 'info',
+  ACCOUNT_TYPE_UPDATE: 'neutral',
+  ACCOUNT_TYPE_DELETE: 'danger',
+  SYSTEM_RESET: 'danger',
+  SYSTEM_RESET_USERS: 'danger',
+  SYSTEM_RESET_DEPARTMENTS: 'warning',
+  SYSTEM_RESET_PERMISSIONS: 'warning',
+  SYSTEM_RESET_ACCOUNT_TYPES: 'warning',
+  SYSTEM_RESET_PASSWORDS: 'warning',
+  SYSTEM_RESET_AUDIT_LOGS: 'warning',
 }
 
 const TARGET_PREFIX_LABELS = {
@@ -36,6 +82,10 @@ const TARGET_PREFIX_LABELS = {
 
 export function actionLabel(action) {
   return ACTION_LABELS[action] || action
+}
+
+export function actionBadgeClass(action) {
+  return `badge-${ACTION_TONES[action] || 'neutral'}`
 }
 
 export function targetLabel(target) {

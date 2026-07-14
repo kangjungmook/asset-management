@@ -9,12 +9,14 @@
         <result property="action" column="action"/>
         <result property="target" column="target"/>
         <result property="detail" column="detail"/>
+        <result property="ipAddress" column="ip_address"/>
+        <result property="result" column="result"/>
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
     <insert id="insert" parameterType="com.company.ams.entity.AuditLog" useGeneratedKeys="true" keyProperty="logId">
-        INSERT INTO tb_audit_log (user_id, action, target, detail)
-        VALUES (#{userId}, #{action}, #{target}, #{detail})
+        INSERT INTO tb_audit_log (user_id, action, target, detail, ip_address, result)
+        VALUES (#{userId}, #{action}, #{target}, #{detail}, #{ipAddress}, #{result})
     </insert>
 
     <sql id="searchWhere">
@@ -27,7 +29,7 @@
     </sql>
 
     <select id="search" resultMap="auditLogResultMap">
-        SELECT l.log_id, l.user_id, u.name AS user_name, l.action, l.target, l.detail, l.created_at
+        SELECT l.log_id, l.user_id, u.name AS user_name, l.action, l.target, l.detail, l.ip_address, l.result, l.created_at
         FROM tb_audit_log l
         LEFT JOIN tb_user u ON u.user_id = l.user_id
         <include refid="searchWhere"/>

@@ -5,19 +5,29 @@
     <resultMap id="departmentResultMap" type="com.company.ams.entity.Department">
         <id property="deptId" column="dept_id"/>
         <result property="deptName" column="dept_name"/>
+        <result property="managerName" column="manager_name"/>
+        <result property="memberCount" column="member_count"/>
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
+    <sql id="selectColumns">
+        SELECT d.dept_id, d.dept_name, d.created_at,
+               (SELECT u.name FROM tb_user u
+                  JOIN tb_user_role r ON r.user_id = u.user_id
+                 WHERE r.role = 'DEPT_MANAGER' AND u.dept_id = d.dept_id
+                 LIMIT 1) AS manager_name,
+               (SELECT COUNT(*) FROM tb_user u2 WHERE u2.dept_id = d.dept_id) AS member_count
+        FROM tb_department d
+    </sql>
+
     <select id="findAll" resultMap="departmentResultMap">
-        SELECT dept_id, dept_name, created_at
-        FROM tb_department
-        ORDER BY dept_id
+        <include refid="selectColumns"/>
+        ORDER BY d.dept_id
     </select>
 
     <select id="findById" resultMap="departmentResultMap">
-        SELECT dept_id, dept_name, created_at
-        FROM tb_department
-        WHERE dept_id = #{deptId}
+        <include refid="selectColumns"/>
+        WHERE d.dept_id = #{deptId}
     </select>
 
     <insert id="insert" parameterType="com.company.ams.entity.Department" useGeneratedKeys="true" keyProperty="deptId">

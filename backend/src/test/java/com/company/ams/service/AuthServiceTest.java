@@ -12,6 +12,7 @@ import com.company.ams.mapper.UserPermissionMapper;
 import com.company.ams.mapper.UserRoleMapper;
 import com.company.ams.security.Authz;
 import com.company.ams.security.JwtProvider;
+import com.company.ams.security.PrincipalFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AuthServiceTest {
+class  AuthServiceTest {
 
     private static final String RAW_PASSWORD = "correct-password";
 
@@ -55,9 +56,10 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
+        PrincipalFactory principalFactory = new PrincipalFactory(userRoleMapper, userPermissionMapper);
         authService = new AuthService(
-                userMapper, userRoleMapper, userPermissionMapper, refreshTokenMapper,
-                passwordEncoder, jwtProvider, auditLogService, userService, authz);
+                userMapper, refreshTokenMapper,
+                passwordEncoder, jwtProvider, auditLogService, userService, authz, principalFactory);
     }
 
     private User activeUser() {

@@ -25,7 +25,7 @@ async function handleSubmit() {
   }
   if (newPassword.value !== confirmPassword.value) {
     errorMessage.value = '새 비밀번호가 일치하지 않습니다.'
-    return
+    return  
   }
 
   loading.value = true
@@ -54,7 +54,7 @@ async function handleSubmit() {
             <rect x="5" y="11" width="14" height="9" rx="2" />
             <path d="M8 11V8a4 4 0 0 1 8 0v3" />
           </svg>
-        </div>
+        </div>  
       </div>
 
       <h1 style="text-align: center">비밀번호를 변경해주세요</h1>
@@ -71,13 +71,13 @@ async function handleSubmit() {
             id="currentPassword"
             v-model="currentPassword"
             class="input"
-            type="password"
+            type="password"   
             autocomplete="current-password"
             required
           />
         </div>
 
-        <div class="field">
+        <div class="field">   
           <label for="newPassword">새 비밀번호</label>
           <input
             id="newPassword"

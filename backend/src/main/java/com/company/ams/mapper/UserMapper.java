@@ -27,4 +27,10 @@ public interface UserMapper {
                          @Param("mustChangePassword") boolean mustChangePassword);
 
     void deleteById(@Param("userId") Integer userId);
+
+    void updateLastLogin(@Param("userId") Integer userId);
+
+    int countActiveAdmins();
+
+    List<Integer> findApprovalRecipientUserIds(@Param("deptId") Integer deptId, @Param("excludeUserId") Integer excludeUserId);
 }
